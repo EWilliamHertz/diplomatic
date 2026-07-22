@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Users, Mail, UserPlus, X } from 'lucide-react';
+import { Mail, UserPlus, X } from 'lucide-react';
 
 export const Members = () => {
   const { t } = useTranslation();

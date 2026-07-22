@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Globe2, ShieldCheck, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';

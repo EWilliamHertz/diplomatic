@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Dashboard } from './pages/Dashboard';
 import { Decisions } from './pages/Decisions';
