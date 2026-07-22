@@ -52,6 +52,14 @@ export interface Campaign {
   status: 'planned' | 'active' | 'completed';
 }
 
+export interface Calculation {
+  id: string;
+  title: string;
+  formula: string;
+  result: string;
+  createdAt: string;
+}
+
 interface StoreState {
   balance: number;
   proposals: Proposal[];
@@ -60,6 +68,7 @@ interface StoreState {
   leads: any[];
   customers: any[];
   campaigns: Campaign[];
+  calculations: Calculation[];
   addProposal: (p: Partial<Proposal>) => Promise<void>;
   updateProposal: (id: string, updates: Partial<Proposal>) => Promise<void>;
   voteOnProposal: (id: string, choice: 'for'|'against'|'abstain') => Promise<void>;
@@ -76,6 +85,7 @@ interface StoreState {
   bulkDeleteLeads: (ids: string[]) => Promise<void>;
   deleteCustomer: (id: string) => Promise<void>;
   bulkDeleteCustomers: (ids: string[]) => Promise<void>;
+  addCalculation: (c: Partial<Calculation>) => Promise<void>;
 }
 
 const StoreContext = createContext<StoreState | undefined>(undefined);
@@ -88,6 +98,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const [leads, setLeads] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [calculations, setCalculations] = useState<Calculation[]>([]);
 
   const refreshData = async () => {
     try {
@@ -99,6 +110,9 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
       setLeads(data.leads || []);
       setCustomers(data.customers || []);
       
+      const calcRes = await fetch('/api/calculations');
+      if (calcRes.ok) setCalculations(await calcRes.json());
+      
       const bal = (data.transactions || []).reduce((acc: number, t: any) => acc + t.amount, 0);
       setBalance(bal);
     } catch (e) {
@@ -109,6 +123,11 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     refreshData();
   }, []);
+
+  const addCalculation = async (c: Partial<Calculation>) => {
+    await fetch('/api/calculations', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(c) });
+    await refreshData();
+  };
 
   const importLeads = async (data: any[]) => {
     await fetch('/api/leads/import', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
@@ -183,8 +202,8 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <StoreContext.Provider value={{ 
-      balance, proposals, transactions, messages, leads, customers, campaigns,
-      addProposal, updateProposal, voteOnProposal, addArgument, addFollowUp, addMessage, addCampaign, addTransaction, importLeads, importCustomers, updateLeadStatus, bulkUpdateLeadStatus, deleteLead, bulkDeleteLeads, deleteCustomer, bulkDeleteCustomers
+      balance, proposals, transactions, messages, leads, customers, campaigns, calculations,
+      addProposal, updateProposal, voteOnProposal, addArgument, addFollowUp, addMessage, addCampaign, addTransaction, addCalculation, importLeads, importCustomers, updateLeadStatus, bulkUpdateLeadStatus, deleteLead, bulkDeleteLeads, deleteCustomer, bulkDeleteCustomers
     }}>
       {children}
     </StoreContext.Provider>

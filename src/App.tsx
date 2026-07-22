@@ -11,6 +11,7 @@ import { Treasury } from './pages/Treasury';
 import { Information } from './pages/Information';
 import { Leads } from './pages/Leads';
 import { Customers } from './pages/Customers';
+import { Calculator } from './pages/Calculator';
 import { 
   LayoutDashboard, 
   Gavel, 
@@ -24,7 +25,8 @@ import {
   Upload,
   X,
   LogOut,
-  MessageSquare
+  MessageSquare,
+  Calculator as CalcIcon
 } from 'lucide-react';
 
 const ImportModal = ({ isOpen, onClose, itemName }: { isOpen: boolean, onClose: () => void, itemName: string }) => {
@@ -120,6 +122,7 @@ function AppLayout() {
     { to: "/app/information", icon: <MessageSquare size={20} />, label: t('nav.information') },
     { to: "/app/decisions", icon: <Gavel size={20} />, label: t('nav.decisions') },
     { to: "/app/treasury", icon: <Wallet size={20} />, label: t('nav.treasury') },
+    { to: "/app/calculator", icon: <CalcIcon size={20} />, label: "Calculator" },
     { to: "/app/members", icon: <Users size={20} />, label: t('nav.members') },
     { to: "/app/leads", icon: <UserPlus size={20} />, label: t('nav.leads') },
     { to: "/app/customers", icon: <UserCheck size={20} />, label: t('nav.customers') },
@@ -191,6 +194,7 @@ function AppLayout() {
             <Route path="information" element={<Information />} />
             <Route path="decisions" element={<Decisions />} />
             <Route path="treasury" element={<Treasury />} />
+            <Route path="calculator" element={<Calculator />} />
             <Route path="members" element={<Members />} />
             <Route path="leads" element={<Leads />} />
             <Route path="customers" element={<Customers />} />

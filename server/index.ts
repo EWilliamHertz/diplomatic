@@ -170,6 +170,21 @@ app.post('/api/campaigns', fakeAuth, async (req: any, res: any) => {
   } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 
+// Calculations
+app.get('/api/calculations', fakeAuth, async (req: any, res: any) => {
+  try {
+    const calcs = await prisma.calculation.findMany({ orderBy: { createdAt: 'desc' } });
+    res.json(calcs);
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/calculations', fakeAuth, async (req: any, res: any) => {
+  try {
+    const calc = await prisma.calculation.create({ data: req.body });
+    res.json(calc);
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
 // Leads
 app.post('/api/leads/import', fakeAuth, async (req: any, res: any) => {
   try {

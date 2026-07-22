@@ -8,7 +8,6 @@ export const Landing = () => {
   const { i18n } = useTranslation();
   
   const isSv = i18n.language === 'sv';
-  const domainName = isSv ? 'SamStyre.se' : 'SamStyre.com';
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#000000', color: '#ffffff', position: 'relative', overflow: 'hidden' }}>

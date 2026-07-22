@@ -154,3 +154,11 @@ model Customer {
   data        Json
   createdAt   DateTime @default(now())
 }
+
+model Calculation {
+  id          String   @id @default(uuid())
+  title       String
+  formula     String
+  result      String
+  createdAt   DateTime @default(now())
+}
