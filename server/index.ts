@@ -28,6 +28,25 @@ const fakeAuth = (req: any, res: any, next: any) => {
   next();
 };
 
+const ensureSeedData = async () => {
+  try {
+    const user = await prisma.user.upsert({
+      where: { id: 'admin-123' },
+      update: {},
+      create: { id: 'admin-123', email: 'admin@samstyre.com', passwordHash: 'hash', name: 'Admin' }
+    });
+    const group = await prisma.group.upsert({
+      where: { id: 'g1' },
+      update: {},
+      create: { id: 'g1', name: 'Main Group', inviteCode: 'invite-123', createdBy: 'admin-123' }
+    });
+    console.log('Seed data verified');
+  } catch (err) {
+    console.error('Seed data error:', err);
+  }
+};
+ensureSeedData();
+
 // 1. Get All Data (Massive Sync)
 app.get('/api/sync', fakeAuth, async (req: any, res: any) => {
   try {
@@ -66,8 +85,16 @@ app.get('/api/sync', fakeAuth, async (req: any, res: any) => {
       };
     });
 
-    const formattedLeads = leads.map(l => ({ id: l.id, status: l.status, ...(l.data as any) }));
-    const formattedCustomers = customers.map(c => ({ id: c.id, ...(c.data as any) }));
+    const formattedLeads = leads.map(l => {
+      const dataObj = typeof l.data === 'object' && l.data !== null ? { ...(l.data as any) } : {};
+      delete dataObj.id;
+      return { ...dataObj, id: l.id, status: l.status };
+    });
+    const formattedCustomers = customers.map(c => {
+      const dataObj = typeof c.data === 'object' && c.data !== null ? { ...(c.data as any) } : {};
+      delete dataObj.id;
+      return { ...dataObj, id: c.id };
+    });
     const formattedTransactions = transactions.map(t => ({ id: t.id, date: t.date.toISOString().split('T')[0], description: t.description, amount: t.amount, status: 'completed' }));
     
     res.json({
@@ -85,61 +112,114 @@ app.get('/api/sync', fakeAuth, async (req: any, res: any) => {
 
 // Proposals
 app.post('/api/proposals', fakeAuth, async (req: any, res: any) => {
-  const p = await prisma.proposal.create({
-    data: { groupId: 'g1', createdBy: req.user.id, title: req.body.title, description: req.body.description, amount: req.body.amount, status: req.body.status }
-  });
-  res.json(p);
+  try {
+    const p = await prisma.proposal.create({
+      data: { groupId: 'g1', createdBy: req.user.id, title: req.body.title, description: req.body.description, amount: req.body.amount, status: req.body.status }
+    });
+    res.json(p);
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 app.put('/api/proposals/:id', fakeAuth, async (req: any, res: any) => {
-  const p = await prisma.proposal.update({ where: { id: req.params.id }, data: req.body });
-  res.json(p);
+  try {
+    const p = await prisma.proposal.update({ where: { id: req.params.id }, data: req.body });
+    res.json(p);
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 app.post('/api/proposals/:id/vote', fakeAuth, async (req: any, res: any) => {
-  const { choice } = req.body;
-  await prisma.vote.create({ data: { proposalId: req.params.id, userId: req.user.id, choice } });
-  res.json({ success: true });
+  try {
+    const { choice } = req.body;
+    await prisma.vote.create({ data: { proposalId: req.params.id, userId: req.user.id, choice } });
+    res.json({ success: true });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 app.post('/api/proposals/:id/arguments', fakeAuth, async (req: any, res: any) => {
-  await prisma.comment.create({ data: { proposalId: req.params.id, userId: req.user.id, body: `ARG:${req.body.type}:${req.body.text}` } });
-  res.json({ success: true });
+  try {
+    await prisma.comment.create({ data: { proposalId: req.params.id, userId: req.user.id, body: `ARG:${req.body.type}:${req.body.text}` } });
+    res.json({ success: true });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 app.post('/api/proposals/:id/followups', fakeAuth, async (req: any, res: any) => {
-  await prisma.comment.create({ data: { proposalId: req.params.id, userId: req.user.id, body: `FUP:${req.body.text}` } });
-  res.json({ success: true });
+  try {
+    await prisma.comment.create({ data: { proposalId: req.params.id, userId: req.user.id, body: `FUP:${req.body.text}` } });
+    res.json({ success: true });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+// Transactions
+app.post('/api/transactions', fakeAuth, async (req: any, res: any) => {
+  try {
+    const t = await prisma.transaction.create({ 
+      data: { 
+        groupId: 'g1', 
+        createdBy: req.user.id, 
+        date: new Date(req.body.date), 
+        description: req.body.description, 
+        amount: req.body.amount, 
+        type: req.body.amount > 0 ? 'income' : 'expense' 
+      } 
+    });
+    res.json(t);
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 
 // Campaigns
 app.post('/api/campaigns', fakeAuth, async (req: any, res: any) => {
-  const c = await prisma.campaign.create({ data: req.body });
-  res.json(c);
+  try {
+    const c = await prisma.campaign.create({ data: req.body });
+    res.json(c);
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 
 // Leads
 app.post('/api/leads/import', fakeAuth, async (req: any, res: any) => {
-  await Promise.all(req.body.map((data: any) => prisma.lead.create({ data: { data } })));
-  res.json({ success: true });
+  try {
+    await Promise.all(req.body.map((data: any) => prisma.lead.create({ data: { data } })));
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 app.put('/api/leads/:id/status', fakeAuth, async (req: any, res: any) => {
-  await prisma.lead.update({ where: { id: req.params.id }, data: { status: req.body.status } });
-  res.json({ success: true });
+  try {
+    await prisma.lead.update({ where: { id: req.params.id }, data: { status: req.body.status } });
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 app.post('/api/leads/bulk-status', fakeAuth, async (req: any, res: any) => {
-  await prisma.lead.updateMany({ where: { id: { in: req.body.ids } }, data: { status: req.body.status } });
-  res.json({ success: true });
+  try {
+    await prisma.lead.updateMany({ where: { id: { in: req.body.ids } }, data: { status: req.body.status } });
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 app.delete('/api/leads/:id', fakeAuth, async (req: any, res: any) => {
-  await prisma.lead.delete({ where: { id: req.params.id } });
-  res.json({ success: true });
+  try {
+    await prisma.lead.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 app.post('/api/leads/bulk-delete', fakeAuth, async (req: any, res: any) => {
-  await prisma.lead.deleteMany({ where: { id: { in: req.body.ids } } });
-  res.json({ success: true });
+  try {
+    await prisma.lead.deleteMany({ where: { id: { in: req.body.ids } } });
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Customers
 app.post('/api/customers/import', fakeAuth, async (req: any, res: any) => {
-  await Promise.all(req.body.map((data: any) => prisma.customer.create({ data: { data } })));
-  res.json({ success: true });
+  try {
+    await Promise.all(req.body.map((data: any) => prisma.customer.create({ data: { data } })));
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 app.delete('/api/customers/:id', fakeAuth, async (req: any, res: any) => {
   await prisma.customer.delete({ where: { id: req.params.id } });

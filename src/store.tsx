@@ -67,6 +67,7 @@ interface StoreState {
   addFollowUp: (proposalId: string, f: FollowUp) => Promise<void>;
   addMessage: (m: Message) => void;
   addCampaign: (c: Campaign) => Promise<void>;
+  addTransaction: (t: Partial<Transaction>) => Promise<void>;
   importLeads: (data: any[]) => Promise<void>;
   importCustomers: (data: any[]) => Promise<void>;
   updateLeadStatus: (id: string, status: string) => Promise<void>;
@@ -146,6 +147,11 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     await refreshData();
   };
 
+  const addTransaction = async (t: Partial<Transaction>) => {
+    await fetch('/api/transactions', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(t) });
+    await refreshData();
+  };
+
   const addProposal = async (p: Partial<Proposal>) => {
     await fetch('/api/proposals', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(p) });
     await refreshData();
@@ -178,7 +184,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   return (
     <StoreContext.Provider value={{ 
       balance, proposals, transactions, messages, leads, customers, campaigns,
-      addProposal, updateProposal, voteOnProposal, addArgument, addFollowUp, addMessage, addCampaign, importLeads, importCustomers, updateLeadStatus, bulkUpdateLeadStatus, deleteLead, bulkDeleteLeads, deleteCustomer, bulkDeleteCustomers
+      addProposal, updateProposal, voteOnProposal, addArgument, addFollowUp, addMessage, addCampaign, addTransaction, importLeads, importCustomers, updateLeadStatus, bulkUpdateLeadStatus, deleteLead, bulkDeleteLeads, deleteCustomer, bulkDeleteCustomers
     }}>
       {children}
     </StoreContext.Provider>

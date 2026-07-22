@@ -54,11 +54,8 @@ export const Join = () => {
         ) : (
           <>
             <div className="flex justify-center mb-6">
-              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <img src="/IMG_5324.webp" alt="SamStyre Logo" style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
-                <h1 style={{ fontSize: '24px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '-0.02em', background: 'linear-gradient(90deg, #fff, #a3a3a3)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
-                  SamStyre
-                </h1>
+              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <img src="/IMG_5324.webp" alt="Logo" style={{ width: '80px', height: '80px', borderRadius: '12px', objectFit: 'cover' }} />
               </div>
             </div>
             

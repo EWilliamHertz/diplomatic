@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { ImportModal } from '../components/ImportModal';
-import { Download, LayoutGrid, List as ListIcon, ArrowUpDown, Trash2, CheckSquare, Square, ChevronDown } from 'lucide-react';
+import { Download, LayoutGrid, List as ListIcon, ArrowUpDown, Trash2, CheckSquare, Square } from 'lucide-react';
 
 export const Leads = () => {
   const { t } = useTranslation();

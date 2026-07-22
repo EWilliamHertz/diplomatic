@@ -62,17 +62,17 @@ const ImportModal = ({ isOpen, onClose, itemName }: { isOpen: boolean, onClose: 
           </div>
         ) : (
           <>
-            <p className="text-secondary" style={{ fontSize: '14px' }}>Upload a CSV file to import {itemName.toLowerCase()}s in bulk.</p>
+            <p className="text-secondary" style={{ fontSize: '14px' }}>Upload a CSV or XLSX file to import {itemName.toLowerCase()}s in bulk.</p>
             <div 
               style={{ border: '2px dashed var(--panel-border)', borderRadius: '8px', padding: '32px', textAlign: 'center', cursor: 'pointer' }}
               onClick={() => document.getElementById('file-upload')?.click()}
             >
               <Upload size={24} className="text-secondary mx-auto mb-2" />
-              <p className="text-secondary">{file ? file.name : 'Click to select CSV file'}</p>
+              <p className="text-secondary">{file ? file.name : 'Click to select CSV or XLSX file'}</p>
               <input 
                 id="file-upload" 
                 type="file" 
-                accept=".csv" 
+                accept=".csv,.xlsx" 
                 style={{ display: 'none' }} 
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
               />
@@ -130,17 +130,7 @@ function AppLayout() {
 
   const BrandLogo = () => (
     <div className="flex items-center gap-3">
-      <img src="/IMG_5324.webp" alt="SamStyre Logo" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
-      <h1 style={{ 
-        fontSize: '24px', 
-        fontWeight: 'bold', 
-        background: 'linear-gradient(90deg, var(--mint), var(--lilac), var(--amber))', 
-        WebkitBackgroundClip: 'text', 
-        WebkitTextFillColor: 'transparent',
-        display: 'inline-block'
-      }}>
-        SamStyre
-      </h1>
+      <img src="/IMG_5324.webp" alt="Logo" style={{ width: '80px', height: '80px', borderRadius: '12px', objectFit: 'cover' }} />
     </div>
   );
 

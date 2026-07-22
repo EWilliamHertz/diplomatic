@@ -41,12 +41,7 @@ export const Auth = () => {
 
       <div className="panel" style={{ width: '100%', maxWidth: '420px', padding: '40px', position: 'relative', zIndex: 10, backdropFilter: 'blur(40px)', background: 'rgba(6, 11, 24, 0.7)' }}>
         <div className="flex flex-col items-center justify-center gap-2 mb-8">
-          <img src="/IMG_5324.webp" alt="SamStyre Logo" style={{ width: '64px', height: '64px', borderRadius: '12px', objectFit: 'cover' }} />
-          <h1 style={{ 
-            fontSize: '32px', fontWeight: 'bold', textAlign: 'center', marginBottom: '8px',
-            background: 'linear-gradient(90deg, var(--mint), var(--lilac))', 
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' 
-          }}>SamStyre</h1>
+          <img src="/IMG_5324.webp" alt="Logo" style={{ width: '120px', height: '120px', borderRadius: '16px', objectFit: 'cover' }} />
         </div>
         <p className="text-secondary text-center text-sm mb-8">The operating system for collectives.</p>
         

@@ -1,17 +1,72 @@
 
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Wallet, ArrowDownRight, ArrowUpRight } from 'lucide-react';
+import { Wallet, Plus, X } from 'lucide-react';
 import { useStore } from '../store';
 
 export const Treasury = () => {
   const { t } = useTranslation();
-  const { balance, transactions } = useStore();
+  const { balance, transactions, addTransaction } = useStore();
+  
+  const [showModal, setShowModal] = useState(false);
+  const [desc, setDesc] = useState('');
+  const [amount, setAmount] = useState('');
+  const [type, setType] = useState<'income'|'expense'>('expense');
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!desc || !amount) return;
+    const numAmount = type === 'expense' ? -Math.abs(Number(amount)) : Math.abs(Number(amount));
+    await addTransaction({
+      description: desc,
+      amount: numAmount,
+      date: new Date().toISOString().split('T')[0]
+    });
+    setShowModal(false);
+    setDesc('');
+    setAmount('');
+  };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 relative">
       <div className="flex justify-between items-center" style={{ marginBottom: '24px' }}>
         <h2 style={{ fontSize: '24px' }}>{t('treasuryPage.title')}</h2>
+        <button 
+          className="btn btn-primary flex items-center gap-2"
+          onClick={() => setShowModal(true)}
+        >
+          <Plus size={18} /> New Transaction
+        </button>
       </div>
+
+      {showModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="panel" style={{ width: '400px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="flex justify-between items-center">
+              <h3 style={{ fontSize: '18px' }}>Add Transaction</h3>
+              <button onClick={() => setShowModal(false)}><X size={20} /></button>
+            </div>
+            <form onSubmit={handleAdd} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm text-secondary">Type</label>
+                <div className="flex gap-2">
+                  <button type="button" className={`flex-1 p-2 rounded border ${type === 'income' ? 'border-mint text-mint bg-mint/10' : 'border-panel-border text-secondary'}`} onClick={() => setType('income')}>Income (+)</button>
+                  <button type="button" className={`flex-1 p-2 rounded border ${type === 'expense' ? 'border-danger text-danger bg-danger/10' : 'border-panel-border text-secondary'}`} onClick={() => setType('expense')}>Expense (-)</button>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm text-secondary">Description</label>
+                <input type="text" value={desc} onChange={e => setDesc(e.target.value)} className="input p-2 rounded" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--panel-border)', color: 'white' }} required />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm text-secondary">Amount (SEK)</label>
+                <input type="number" value={amount} onChange={e => setAmount(e.target.value)} className="input p-2 rounded" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--panel-border)', color: 'white' }} required min="1" />
+              </div>
+              <button type="submit" className="btn btn-primary mt-2">Save Transaction</button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Balance Panel */}
       <div className="panel flex flex-col gap-2" style={{ background: 'linear-gradient(135deg, rgba(0, 255, 170, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%)', border: '1px solid rgba(0, 255, 170, 0.2)' }}>
