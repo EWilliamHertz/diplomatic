@@ -313,7 +313,7 @@ app.post('/api/send-invite-test', async (req: any, res: any) => {
   try {
     const { email } = req.body;
     const result = await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: process.env.RESEND_FROM_EMAIL || 'hello@samstyre.com',
       to: email,
       subject: 'You have been invited to join SamStyre',
       html: `<p>Welcome to SamStyre! Click here to accept your invitation.</p>`
