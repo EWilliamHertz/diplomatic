@@ -20,7 +20,7 @@ export const Treasury = () => {
           <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{t('treasuryPage.balance')}</span>
         </div>
         <div style={{ fontSize: '48px', fontWeight: '900', color: '#fff', letterSpacing: '-0.02em' }}>
-          €{balance.toLocaleString()}
+          {balance.toLocaleString()} SEK
         </div>
       </div>
 
@@ -31,20 +31,21 @@ export const Treasury = () => {
             <tr style={{ borderBottom: '1px solid var(--panel-border)', color: 'var(--text-secondary)' }}>
               <th className="py-3 font-medium">{t('treasuryPage.colDate')}</th>
               <th className="py-3 font-medium">{t('treasuryPage.colDesc')}</th>
-              <th className="py-3 font-medium text-right">{t('treasuryPage.colAmount')}</th>
+              <th className="py-3 font-medium text-right text-mint">In (+)</th>
+              <th className="py-3 font-medium text-right text-danger">Out (-)</th>
               <th className="py-3 font-medium text-right">{t('treasuryPage.colStatus')}</th>
             </tr>
           </thead>
           <tbody>
             {transactions.map(tx => (
-              <tr key={tx.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <td className="py-4 text-secondary text-sm">{tx.date}</td>
+              <tr key={tx.id} className="hover:bg-white/5 transition" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <td className="py-4 text-secondary text-sm font-mono">{tx.date}</td>
                 <td className="py-4">{tx.description}</td>
-                <td className="py-4 text-right">
-                  <div className="flex items-center justify-end gap-1" style={{ color: tx.amount > 0 ? 'var(--mint)' : 'var(--danger)', fontWeight: 'bold' }}>
-                    {tx.amount > 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-                    €{Math.abs(tx.amount).toLocaleString()}
-                  </div>
+                <td className="py-4 text-right font-mono font-bold text-mint">
+                  {tx.amount > 0 ? `+${tx.amount.toLocaleString()} SEK` : '-'}
+                </td>
+                <td className="py-4 text-right font-mono font-bold text-danger">
+                  {tx.amount < 0 ? `${tx.amount.toLocaleString()} SEK` : '-'}
                 </td>
                 <td className="py-4 text-right">
                   <span style={{ 

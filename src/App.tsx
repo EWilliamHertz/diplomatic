@@ -9,6 +9,8 @@ import { Members } from './pages/Members';
 import { Join } from './pages/Join';
 import { Treasury } from './pages/Treasury';
 import { Information } from './pages/Information';
+import { Leads } from './pages/Leads';
+import { Customers } from './pages/Customers';
 import { 
   LayoutDashboard, 
   Gavel, 
@@ -105,11 +107,10 @@ const PageHeader = ({ title, itemName }: { title: string, itemName: string }) =>
   );
 };
 
+import { Marketing } from './pages/Marketing';
+
 const Settings = () => <div className="panel"><h2>Settings Content</h2></div>;
-const Leads = () => <div className="panel"><PageHeader title="Leads" itemName="Lead" /></div>;
-const Customers = () => <div className="panel"><PageHeader title="Customers" itemName="Customer" /></div>;
 const Orders = () => <div className="panel"><PageHeader title="Orders" itemName="Order" /></div>;
-const Marketing = () => <div className="panel"><PageHeader title="Campaigns" itemName="Campaign" /></div>;
 
 function AppLayout() {
   const { t, i18n } = useTranslation();
@@ -128,16 +129,19 @@ function AppLayout() {
   ];
 
   const BrandLogo = () => (
-    <h1 style={{ 
-      fontSize: '24px', 
-      fontWeight: 'bold', 
-      background: 'linear-gradient(90deg, var(--mint), var(--lilac), var(--amber))', 
-      WebkitBackgroundClip: 'text', 
-      WebkitTextFillColor: 'transparent',
-      display: 'inline-block'
-    }}>
-      SamStyre
-    </h1>
+    <div className="flex items-center gap-3">
+      <img src="/IMG_5324.webp" alt="SamStyre Logo" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
+      <h1 style={{ 
+        fontSize: '24px', 
+        fontWeight: 'bold', 
+        background: 'linear-gradient(90deg, var(--mint), var(--lilac), var(--amber))', 
+        WebkitBackgroundClip: 'text', 
+        WebkitTextFillColor: 'transparent',
+        display: 'inline-block'
+      }}>
+        SamStyre
+      </h1>
+    </div>
   );
 
   return (

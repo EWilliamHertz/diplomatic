@@ -1,22 +1,32 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, XCircle, MinusCircle, AlertCircle, Plus, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp } from 'lucide-react';
+import { CheckCircle2, XCircle, MinusCircle, AlertCircle, Plus, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, Edit2, MessageSquare } from 'lucide-react';
 import { useStore } from '../store';
 import type { Proposal } from '../store';
 
 export const Decisions = () => {
   const { t } = useTranslation();
-  const { proposals, addProposal, voteOnProposal, addArgument } = useStore();
+  const { proposals, addProposal, updateProposal, voteOnProposal, addArgument, addFollowUp } = useStore();
   
   const [isCreating, setIsCreating] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newAmount, setNewAmount] = useState<number>(0);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editAmount, setEditAmount] = useState<number>(0);
+
   const [expandedArgs, setExpandedArgs] = useState<Record<string, boolean>>({});
+  const [activeTab, setActiveTab] = useState<Record<string, 'args'|'followups'>>({});
+  
   const [newArgText, setNewArgText] = useState('');
   const [argType, setArgType] = useState<'pro'|'con'>('pro');
   const [activeProposalForArg, setActiveProposalForArg] = useState<string | null>(null);
+
+  const [newFollowUpText, setNewFollowUpText] = useState('');
+  const [activeProposalForFollowUp, setActiveProposalForFollowUp] = useState<string | null>(null);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +66,32 @@ export const Decisions = () => {
     });
     setNewArgText('');
     setActiveProposalForArg(null);
+  };
+
+  const handleAddFollowUp = (e: React.FormEvent, proposalId: string) => {
+    e.preventDefault();
+    if (!newFollowUpText.trim()) return;
+    addFollowUp(proposalId, {
+      id: Math.random().toString(36).substring(7),
+      text: newFollowUpText,
+      author: 'You (Admin)',
+      date: new Date().toLocaleDateString()
+    });
+    setNewFollowUpText('');
+    setActiveProposalForFollowUp(null);
+  };
+
+  const startEditing = (p: Proposal) => {
+    setEditingId(p.id);
+    setEditTitle(p.title);
+    setEditDesc(p.description);
+    setEditAmount(p.amount);
+  };
+
+  const saveEdit = (id: string) => {
+    if (!editTitle.trim() || !editDesc.trim()) return;
+    updateProposal(id, { title: editTitle, description: editDesc, amount: editAmount });
+    setEditingId(null);
   };
 
   return (
@@ -113,16 +149,49 @@ export const Decisions = () => {
             return (
               <div key={proposal.id} className="panel flex flex-col gap-4">
                 <div className="flex justify-between items-start">
-                  <div>
-                    <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>{proposal.title}</h3>
-                    <p className="text-secondary" style={{ marginTop: '4px' }}>{proposal.description}</p>
-                    {proposal.amount !== 0 && (
-                      <div className="mt-2 text-sm font-bold" style={{ color: proposal.amount > 0 ? 'var(--mint)' : 'var(--danger)' }}>
-                        Financial Impact: €{Math.abs(proposal.amount).toLocaleString()} {proposal.amount < 0 ? '(Expense)' : '(Income)'}
+                  {editingId === proposal.id ? (
+                    <div className="flex-1 mr-4 flex flex-col gap-2">
+                      <input 
+                        type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)}
+                        className="w-full bg-black/50 border border-white/10 rounded p-2 text-white text-lg font-bold outline-none focus:border-mint"
+                      />
+                      <textarea 
+                        value={editDesc} onChange={e => setEditDesc(e.target.value)}
+                        className="w-full bg-black/50 border border-white/10 rounded p-2 text-white outline-none focus:border-mint text-sm"
+                        rows={2}
+                      />
+                      <div className="flex items-center gap-2">
+                         <span className="text-sm text-secondary">Financial Impact:</span>
+                         <input 
+                          type="number" value={editAmount} onChange={e => setEditAmount(parseFloat(e.target.value) || 0)}
+                          className="bg-black/50 border border-white/10 rounded p-1 text-white outline-none focus:border-mint w-32"
+                        />
                       </div>
-                    )}
-                  </div>
-                  <span className={`px-2 py-1 rounded text-sm`} style={{ backgroundColor: proposal.status === 'active' ? 'var(--amber)' : proposal.status === 'approved' ? 'var(--mint)' : 'var(--danger)', color: proposal.status === 'active' || proposal.status === 'approved' ? '#000' : '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
+                      <div className="flex gap-2 mt-2">
+                        <button onClick={() => setEditingId(null)} className="btn btn-secondary text-sm px-3 py-1">Cancel</button>
+                        <button onClick={() => saveEdit(proposal.id)} className="btn btn-primary text-sm px-3 py-1">Save</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex-1 group">
+                      <div className="flex items-center gap-2">
+                        <h3 style={{ fontSize: '18px', fontWeight: 'bold' }}>{proposal.title}</h3>
+                        <button 
+                          onClick={() => startEditing(proposal)} 
+                          className="opacity-0 group-hover:opacity-100 transition text-secondary hover:text-white"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                      </div>
+                      <p className="text-secondary" style={{ marginTop: '4px' }}>{proposal.description}</p>
+                      {proposal.amount !== 0 && (
+                        <div className="mt-2 text-sm font-bold" style={{ color: proposal.amount > 0 ? 'var(--mint)' : 'var(--danger)' }}>
+                          Financial Impact: {Math.abs(proposal.amount).toLocaleString()} SEK {proposal.amount < 0 ? '(Expense)' : '(Income)'}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <span className={`px-2 py-1 rounded text-sm whitespace-nowrap`} style={{ backgroundColor: proposal.status === 'active' ? 'var(--amber)' : proposal.status === 'approved' ? 'var(--mint)' : 'var(--danger)', color: proposal.status === 'active' || proposal.status === 'approved' ? '#000' : '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>
                     {t(`proposals.status.${proposal.status}`)}
                   </span>
                 </div>
@@ -142,54 +211,112 @@ export const Decisions = () => {
                 <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--panel-border)' }}>
                   <button onClick={() => toggleArgs(proposal.id)} className="flex items-center gap-2 text-sm text-secondary hover:text-primary transition">
                     {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    {isExpanded ? t('proposals.hideProsCons') : `${t('proposals.viewProsCons')} (${proposal.arguments.length})`}
+                    {isExpanded ? t('proposals.hideProsCons') : `View Discussion (${proposal.arguments.length + (proposal.followUps?.length || 0)})`}
                   </button>
 
                   {isExpanded && (
                     <div className="flex flex-col gap-4 mt-4">
-                      {proposal.arguments.length > 0 ? (
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="flex flex-col gap-2">
-                            <h4 className="text-mint font-bold flex items-center gap-1"><ThumbsUp size={14}/> {t('proposals.addPro')}</h4>
-                            {proposal.arguments.filter(a => a.type === 'pro').map(arg => (
-                              <div key={arg.id} className="p-2 rounded" style={{ background: 'rgba(0, 232, 162, 0.1)', borderLeft: '2px solid var(--mint)' }}>
-                                <p className="text-sm">{arg.text}</p>
-                                <span className="text-xs text-secondary opacity-70">- {arg.author}</span>
-                              </div>
-                            ))}
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            <h4 className="text-danger font-bold flex items-center gap-1"><ThumbsDown size={14}/> {t('proposals.addCon')}</h4>
-                            {proposal.arguments.filter(a => a.type === 'con').map(arg => (
-                              <div key={arg.id} className="p-2 rounded" style={{ background: 'rgba(244, 63, 94, 0.1)', borderLeft: '2px solid var(--danger)' }}>
-                                <p className="text-sm">{arg.text}</p>
-                                <span className="text-xs text-secondary opacity-70">- {arg.author}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-secondary"></p>
-                      )}
-
-                      {activeProposalForArg === proposal.id ? (
-                        <form onSubmit={(e) => handleAddArgument(e, proposal.id)} className="flex flex-col gap-2 mt-2">
-                          <div className="flex gap-2">
-                            <select value={argType} onChange={(e) => setArgType(e.target.value as 'pro'|'con')} style={{ padding: '8px', background: 'var(--panel-bg)', color: '#fff', border: '1px solid var(--panel-border)', borderRadius: '4px' }}>
-                              <option value="pro">{t('proposals.addPro')}</option>
-                              <option value="con">{t('proposals.addCon')}</option>
-                            </select>
-                            <input type="text" value={newArgText} onChange={e => setNewArgText(e.target.value)} placeholder="..." style={{ flex: 1, padding: '8px', background: 'var(--bg-base)', border: '1px solid var(--panel-border)', borderRadius: '4px', color: '#fff' }} />
-                          </div>
-                          <div className="flex gap-2 justify-end">
-                            <button type="button" className="text-sm text-secondary" onClick={() => setActiveProposalForArg(null)}>{t('common.cancel')}</button>
-                            <button type="submit" className="text-sm text-mint font-bold">{t('proposals.addArg')}</button>
-                          </div>
-                        </form>
-                      ) : (
-                        <button onClick={() => setActiveProposalForArg(proposal.id)} className="btn btn-secondary text-sm mt-2" style={{ padding: '6px 12px', alignSelf: 'flex-start' }}>
-                          <Plus size={14} /> {t('proposals.addArg')}
+                      <div className="flex gap-4 border-b border-white/10 pb-2">
+                        <button 
+                          className={`text-sm font-bold ${activeTab[proposal.id] !== 'followups' ? 'text-mint' : 'text-secondary'}`}
+                          onClick={() => setActiveTab(prev => ({ ...prev, [proposal.id]: 'args' }))}
+                        >
+                          Pros & Cons ({proposal.arguments.length})
                         </button>
+                        <button 
+                          className={`text-sm font-bold ${activeTab[proposal.id] === 'followups' ? 'text-mint' : 'text-secondary'}`}
+                          onClick={() => setActiveTab(prev => ({ ...prev, [proposal.id]: 'followups' }))}
+                        >
+                          Follow-ups ({proposal.followUps?.length || 0})
+                        </button>
+                      </div>
+
+                      {activeTab[proposal.id] !== 'followups' ? (
+                        <>
+                          {proposal.arguments.length > 0 ? (
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="flex flex-col gap-2">
+                                <h4 className="text-mint font-bold flex items-center gap-1"><ThumbsUp size={14}/> {t('proposals.addPro')}</h4>
+                                {proposal.arguments.filter(a => a.type === 'pro').map(arg => (
+                                  <div key={arg.id} className="p-2 rounded" style={{ background: 'rgba(0, 232, 162, 0.1)', borderLeft: '2px solid var(--mint)' }}>
+                                    <p className="text-sm">{arg.text}</p>
+                                    <span className="text-xs text-secondary opacity-70">- {arg.author}</span>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                <h4 className="text-danger font-bold flex items-center gap-1"><ThumbsDown size={14}/> {t('proposals.addCon')}</h4>
+                                {proposal.arguments.filter(a => a.type === 'con').map(arg => (
+                                  <div key={arg.id} className="p-2 rounded" style={{ background: 'rgba(244, 63, 94, 0.1)', borderLeft: '2px solid var(--danger)' }}>
+                                    <p className="text-sm">{arg.text}</p>
+                                    <span className="text-xs text-secondary opacity-70">- {arg.author}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-secondary"></p>
+                          )}
+
+                          {activeProposalForArg === proposal.id ? (
+                            <form onSubmit={(e) => handleAddArgument(e, proposal.id)} className="flex flex-col gap-2 mt-2">
+                              <div className="flex gap-2">
+                                <select value={argType} onChange={(e) => setArgType(e.target.value as 'pro'|'con')} style={{ padding: '8px', background: 'var(--panel-bg)', color: '#fff', border: '1px solid var(--panel-border)', borderRadius: '4px' }}>
+                                  <option value="pro">{t('proposals.addPro')}</option>
+                                  <option value="con">{t('proposals.addCon')}</option>
+                                </select>
+                                <input type="text" value={newArgText} onChange={e => setNewArgText(e.target.value)} placeholder="..." style={{ flex: 1, padding: '8px', background: 'var(--bg-base)', border: '1px solid var(--panel-border)', borderRadius: '4px', color: '#fff' }} />
+                              </div>
+                              <div className="flex gap-2 justify-end">
+                                <button type="button" className="text-sm text-secondary" onClick={() => setActiveProposalForArg(null)}>{t('common.cancel')}</button>
+                                <button type="submit" className="text-sm text-mint font-bold">{t('proposals.addArg')}</button>
+                              </div>
+                            </form>
+                          ) : (
+                            <button onClick={() => setActiveProposalForArg(proposal.id)} className="btn btn-secondary text-sm mt-2" style={{ padding: '6px 12px', alignSelf: 'flex-start' }}>
+                              <Plus size={14} /> {t('proposals.addArg')}
+                            </button>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          {proposal.followUps && proposal.followUps.length > 0 ? (
+                            <div className="flex flex-col gap-3">
+                              {proposal.followUps.map(f => (
+                                <div key={f.id} className="p-3 rounded bg-black/40 border border-white/5 relative">
+                                  <MessageSquare size={14} className="absolute top-3 right-3 text-secondary opacity-50" />
+                                  <p className="text-sm text-white mb-2">{f.text}</p>
+                                  <div className="flex justify-between text-xs text-secondary">
+                                    <span>{f.author}</span>
+                                    <span>{f.date}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-secondary">No follow-ups yet.</p>
+                          )}
+
+                          {activeProposalForFollowUp === proposal.id ? (
+                            <form onSubmit={(e) => handleAddFollowUp(e, proposal.id)} className="flex flex-col gap-2 mt-2">
+                              <textarea 
+                                value={newFollowUpText} 
+                                onChange={e => setNewFollowUpText(e.target.value)} 
+                                placeholder="e.g. We agreed to this, now let's..." 
+                                className="w-full p-2 bg-black/50 border border-white/10 rounded text-white text-sm outline-none focus:border-mint"
+                                rows={2}
+                              />
+                              <div className="flex gap-2 justify-end">
+                                <button type="button" className="text-sm text-secondary" onClick={() => setActiveProposalForFollowUp(null)}>{t('common.cancel')}</button>
+                                <button type="submit" className="text-sm text-mint font-bold">Post Follow-up</button>
+                              </div>
+                            </form>
+                          ) : (
+                            <button onClick={() => setActiveProposalForFollowUp(proposal.id)} className="btn btn-secondary text-sm mt-2" style={{ padding: '6px 12px', alignSelf: 'flex-start' }}>
+                              <Plus size={14} /> Add Follow-up
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   )}

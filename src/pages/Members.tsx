@@ -15,16 +15,30 @@ export const Members = () => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate API call to POST /api/groups/:id/invite (which triggers Resend)
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const response = await fetch('/api/send-invite-test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send invite');
+      }
+
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
         setIsInviteOpen(false);
         setEmail('');
-      }, 2000);
-    }, 1500);
+      }, 2500);
+    } catch (err: any) {
+      alert("Error sending email: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

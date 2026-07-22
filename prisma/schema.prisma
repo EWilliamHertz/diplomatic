@@ -131,3 +131,26 @@ model ImportedRecord {
   data       Json
   createdAt  DateTime @default(now())
 }
+
+model Campaign {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  strategy    String
+  period      String
+  status      String   @default("planned")
+  createdAt   DateTime @default(now())
+}
+
+model Lead {
+  id          String   @id @default(uuid())
+  status      String   @default("new")
+  data        Json
+  createdAt   DateTime @default(now())
+}
+
+model Customer {
+  id          String   @id @default(uuid())
+  data        Json
+  createdAt   DateTime @default(now())
+}

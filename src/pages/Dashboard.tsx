@@ -47,7 +47,7 @@ export const Dashboard = () => {
             <span style={{ fontSize: '14px' }}>{t('dashboard.cashPosition')}</span>
           </div>
           <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--mint)' }}>
-            €{balance.toLocaleString()}
+            {balance.toLocaleString()} SEK
           </div>
         </div>
         
@@ -57,7 +57,7 @@ export const Dashboard = () => {
             <span style={{ fontSize: '14px' }}>{t('dashboard.monthlyBurn')}</span>
           </div>
           <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--danger)' }}>
-            {loading ? <Skeleton width="100px" height="32px" /> : '€0'}
+            {loading ? <Skeleton width="100px" height="32px" /> : '0 SEK'}
           </div>
         </div>
         

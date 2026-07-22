@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 
 export interface Argument {
@@ -8,23 +8,31 @@ export interface Argument {
   author: string;
 }
 
+export interface FollowUp {
+  id: string;
+  text: string;
+  author: string;
+  date: string;
+}
+
 export interface Proposal {
   id: string;
   title: string;
   description: string;
-  amount: number; // Added amount for treasury effect
+  amount: number;
   status: 'active' | 'approved' | 'rejected';
   votes: { for: number; against: number; abstain: number };
   totalMembers: number;
-  userVote: string | null;
+  userVote: 'for' | 'against' | 'abstain' | null;
   arguments: Argument[];
+  followUps?: FollowUp[];
 }
 
 export interface Transaction {
   id: string;
   date: string;
   description: string;
-  amount: number; // negative for expense, positive for income
+  amount: number;
   status: 'completed' | 'pending';
 }
 
@@ -35,15 +43,38 @@ export interface Message {
   date: string;
 }
 
+export interface Campaign {
+  id: string;
+  title: string;
+  description: string;
+  strategy: string;
+  period: string;
+  status: 'planned' | 'active' | 'completed';
+}
+
 interface StoreState {
   balance: number;
   proposals: Proposal[];
   transactions: Transaction[];
   messages: Message[];
-  addProposal: (p: Proposal) => void;
-  voteOnProposal: (id: string, choice: 'for'|'against'|'abstain') => void;
-  addArgument: (proposalId: string, arg: Argument) => void;
+  leads: any[];
+  customers: any[];
+  campaigns: Campaign[];
+  addProposal: (p: Partial<Proposal>) => Promise<void>;
+  updateProposal: (id: string, updates: Partial<Proposal>) => Promise<void>;
+  voteOnProposal: (id: string, choice: 'for'|'against'|'abstain') => Promise<void>;
+  addArgument: (proposalId: string, arg: Argument) => Promise<void>;
+  addFollowUp: (proposalId: string, f: FollowUp) => Promise<void>;
   addMessage: (m: Message) => void;
+  addCampaign: (c: Campaign) => Promise<void>;
+  importLeads: (data: any[]) => Promise<void>;
+  importCustomers: (data: any[]) => Promise<void>;
+  updateLeadStatus: (id: string, status: string) => Promise<void>;
+  bulkUpdateLeadStatus: (ids: string[], status: string) => Promise<void>;
+  deleteLead: (id: string) => Promise<void>;
+  bulkDeleteLeads: (ids: string[]) => Promise<void>;
+  deleteCustomer: (id: string) => Promise<void>;
+  bulkDeleteCustomers: (ids: string[]) => Promise<void>;
 }
 
 const StoreContext = createContext<StoreState | undefined>(undefined);
@@ -53,65 +84,102 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [leads, setLeads] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
 
-  const addProposal = (p: Proposal) => {
-    setProposals([p, ...proposals]);
+  const refreshData = async () => {
+    try {
+      const res = await fetch('/api/sync');
+      const data = await res.json();
+      setProposals(data.proposals || []);
+      setTransactions(data.transactions || []);
+      setCampaigns(data.campaigns || []);
+      setLeads(data.leads || []);
+      setCustomers(data.customers || []);
+      
+      const bal = (data.transactions || []).reduce((acc: number, t: any) => acc + t.amount, 0);
+      setBalance(bal);
+    } catch (e) {
+      console.error('Failed to sync data', e);
+    }
+  };
+
+  useEffect(() => {
+    refreshData();
+  }, []);
+
+  const importLeads = async (data: any[]) => {
+    await fetch('/api/leads/import', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+    await refreshData();
+  };
+  const importCustomers = async (data: any[]) => {
+    await fetch('/api/customers/import', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+    await refreshData();
+  };
+  const updateLeadStatus = async (id: string, status: string) => {
+    await fetch(`/api/leads/${id}/status`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ status }) });
+    await refreshData();
+  };
+  const bulkUpdateLeadStatus = async (ids: string[], status: string) => {
+    await fetch('/api/leads/bulk-status', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ids, status }) });
+    await refreshData();
+  };
+  const deleteLead = async (id: string) => {
+    await fetch(`/api/leads/${id}`, { method: 'DELETE' });
+    await refreshData();
+  };
+  const bulkDeleteLeads = async (ids: string[]) => {
+    await fetch('/api/leads/bulk-delete', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ids }) });
+    await refreshData();
+  };
+  const deleteCustomer = async (id: string) => {
+    await fetch(`/api/customers/${id}`, { method: 'DELETE' });
+    await refreshData();
+  };
+  const bulkDeleteCustomers = async (ids: string[]) => {
+    await fetch('/api/customers/bulk-delete', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ids }) });
+    await refreshData();
+  };
+  const addCampaign = async (c: Campaign) => {
+    await fetch('/api/campaigns', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(c) });
+    await refreshData();
+  };
+
+  const addProposal = async (p: Partial<Proposal>) => {
+    await fetch('/api/proposals', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(p) });
+    await refreshData();
+  };
+
+  const updateProposal = async (id: string, updates: Partial<Proposal>) => {
+    await fetch(`/api/proposals/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(updates) });
+    await refreshData();
+  };
+
+  const voteOnProposal = async (id: string, choice: 'for'|'against'|'abstain') => {
+    await fetch(`/api/proposals/${id}/vote`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ choice }) });
+    await refreshData();
+  };
+
+  const addArgument = async (proposalId: string, arg: Argument) => {
+    await fetch(`/api/proposals/${proposalId}/arguments`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(arg) });
+    await refreshData();
+  };
+
+  const addFollowUp = async (proposalId: string, f: FollowUp) => {
+    await fetch(`/api/proposals/${proposalId}/followups`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(f) });
+    await refreshData();
   };
 
   const addMessage = (m: Message) => {
     setMessages([m, ...messages]);
   };
 
-  const addArgument = (proposalId: string, arg: Argument) => {
-    setProposals(prev => prev.map(p => {
-      if (p.id !== proposalId) return p;
-      return { ...p, arguments: [...p.arguments, arg] };
-    }));
-  };
-
-  const voteOnProposal = (id: string, choice: 'for' | 'against' | 'abstain') => {
-    setProposals(prev => prev.map(p => {
-      if (p.id !== id) return p;
-      if (p.userVote) return p; // Cannot vote twice
-
-      const newVotes = { ...p.votes, [choice]: p.votes[choice] + 1 };
-      const majorityThreshold = Math.floor(p.totalMembers / 2);
-      let newStatus = p.status;
-      
-      if (newVotes.for > majorityThreshold) {
-        newStatus = 'approved';
-      } else if (newVotes.against > majorityThreshold) {
-        newStatus = 'rejected';
-      }
-
-      // Automatically trigger transaction if approved and it has financial impact
-      if (newStatus === 'approved' && p.status === 'active') {
-        if (p.amount !== 0) {
-          // Negative amount because a budget proposal usually means we spend money
-          const txAmount = -Math.abs(p.amount);
-          const newTx: Transaction = {
-            id: Math.random().toString(36).substring(7),
-            date: new Date().toISOString().split('T')[0],
-            description: `Approved Proposal: ${p.title}`,
-            amount: txAmount,
-            status: 'completed'
-          };
-          setTransactions(prevTx => [newTx, ...prevTx]);
-          setBalance(b => b + txAmount);
-        }
-      }
-
-      return {
-        ...p,
-        votes: newVotes,
-        status: newStatus,
-        userVote: choice
-      };
-    }));
-  };
-
   return (
-    <StoreContext.Provider value={{ balance, proposals, transactions, messages, addProposal, voteOnProposal, addArgument, addMessage }}>
+    <StoreContext.Provider value={{ 
+      balance, proposals, transactions, messages, leads, customers, campaigns,
+      addProposal, updateProposal, voteOnProposal, addArgument, addFollowUp, addMessage, addCampaign, importLeads, importCustomers, updateLeadStatus, bulkUpdateLeadStatus, deleteLead, bulkDeleteLeads, deleteCustomer, bulkDeleteCustomers
+    }}>
       {children}
     </StoreContext.Provider>
   );

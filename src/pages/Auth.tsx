@@ -40,11 +40,14 @@ export const Auth = () => {
       <div style={{ position: 'absolute', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(167, 139, 250, 0.05) 0%, transparent 70%)', borderRadius: '50%' }}></div>
 
       <div className="panel" style={{ width: '100%', maxWidth: '420px', padding: '40px', position: 'relative', zIndex: 10, backdropFilter: 'blur(40px)', background: 'rgba(6, 11, 24, 0.7)' }}>
-        <h1 style={{ 
-          fontSize: '32px', fontWeight: 'bold', textAlign: 'center', marginBottom: '8px',
-          background: 'linear-gradient(90deg, var(--mint), var(--lilac))', 
-          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' 
-        }}>SamStyre</h1>
+        <div className="flex flex-col items-center justify-center gap-2 mb-8">
+          <img src="/IMG_5324.webp" alt="SamStyre Logo" style={{ width: '64px', height: '64px', borderRadius: '12px', objectFit: 'cover' }} />
+          <h1 style={{ 
+            fontSize: '32px', fontWeight: 'bold', textAlign: 'center', marginBottom: '8px',
+            background: 'linear-gradient(90deg, var(--mint), var(--lilac))', 
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' 
+          }}>SamStyre</h1>
+        </div>
         <p className="text-secondary text-center text-sm mb-8">The operating system for collectives.</p>
         
         {/* Rebuilt Segmented Control for Toggles */}

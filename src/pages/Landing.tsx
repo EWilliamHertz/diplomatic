@@ -19,14 +19,17 @@ export const Landing = () => {
 
       {/* Navbar */}
       <nav className="flex justify-between items-center p-6 container mx-auto w-full position-relative z-10">
-        <h1 style={{ 
-          fontSize: '28px', fontWeight: '900', letterSpacing: '-0.04em',
-          background: 'linear-gradient(90deg, #ffffff, #a3a3a3)', 
-          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          textTransform: 'uppercase'
-        }}>
-          {domainName}
-        </h1>
+        <div className="flex items-center gap-3">
+          <img src="/IMG_5324.webp" alt="SamStyre Logo" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} />
+          <h1 style={{ 
+            fontSize: '28px', fontWeight: '900', letterSpacing: '-0.04em',
+            background: 'linear-gradient(90deg, #ffffff, #a3a3a3)', 
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            textTransform: 'uppercase'
+          }}>
+            {domainName}
+          </h1>
+        </div>
         <div className="flex items-center gap-4">
           <select 
             style={{ background: 'transparent', color: '#a3a3a3', border: 'none', outline: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}
