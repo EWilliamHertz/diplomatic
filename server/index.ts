@@ -47,6 +47,11 @@ const ensureSeedData = async () => {
 };
 ensureSeedData();
 
+// Health check
+app.get('/api/health', (req: any, res: any) => {
+  res.json({ status: 'ok', time: new Date().toISOString() });
+});
+
 // 1. Get All Data (Massive Sync)
 app.get('/api/sync', fakeAuth, async (req: any, res: any) => {
   try {
