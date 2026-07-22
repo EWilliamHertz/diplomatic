@@ -16,7 +16,7 @@ const app = express();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || 're_123456789');
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
 app.use(cors());
@@ -45,7 +45,7 @@ const ensureSeedData = async () => {
     console.error('Seed data error:', err);
   }
 };
-ensureSeedData();
+// ensureSeedData();
 
 // Health check
 app.get('/api/health', (req: any, res: any) => {
