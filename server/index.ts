@@ -321,6 +321,10 @@ app.post('/api/send-invite-test', async (req: any, res: any) => {
 });
 
 const PORT = process.env.API_PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+export default app;
