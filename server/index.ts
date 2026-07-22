@@ -55,6 +55,7 @@ app.get('/api/sync', fakeAuth, async (req: any, res: any) => {
     const campaigns = await prisma.campaign.findMany({ orderBy: { createdAt: 'desc' } });
     const leads = await prisma.lead.findMany({ orderBy: { createdAt: 'desc' } });
     const customers = await prisma.customer.findMany({ orderBy: { createdAt: 'desc' } });
+    const ordersDb = await prisma.importedRecord.findMany({ where: { type: 'Order' }, orderBy: { createdAt: 'desc' } });
     
     // Transform proposals to match frontend interface
     const formattedProposals = proposals.map(p => {
@@ -95,6 +96,11 @@ app.get('/api/sync', fakeAuth, async (req: any, res: any) => {
       delete dataObj.id;
       return { ...dataObj, id: c.id };
     });
+    const formattedOrders = ordersDb.map(o => {
+      const dataObj = typeof o.data === 'object' && o.data !== null ? { ...(o.data as any) } : {};
+      delete dataObj.id;
+      return { ...dataObj, id: o.id, status: dataObj.status || 'pending' };
+    });
     const formattedTransactions = transactions.map(t => ({ id: t.id, date: t.date.toISOString().split('T')[0], description: t.description, amount: t.amount, status: 'completed' }));
     
     res.json({
@@ -103,6 +109,7 @@ app.get('/api/sync', fakeAuth, async (req: any, res: any) => {
       campaigns,
       leads: formattedLeads,
       customers: formattedCustomers,
+      orders: formattedOrders,
       messages: [] // Mock messages
     });
   } catch (err: any) {
@@ -237,12 +244,63 @@ app.post('/api/customers/import', fakeAuth, async (req: any, res: any) => {
   }
 });
 app.delete('/api/customers/:id', fakeAuth, async (req: any, res: any) => {
-  await prisma.customer.delete({ where: { id: req.params.id } });
-  res.json({ success: true });
+  try {
+    await prisma.customer.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 app.post('/api/customers/bulk-delete', fakeAuth, async (req: any, res: any) => {
-  await prisma.customer.deleteMany({ where: { id: { in: req.body.ids } } });
-  res.json({ success: true });
+  try {
+    await prisma.customer.deleteMany({ where: { id: { in: req.body.ids } } });
+    res.json({ success: true });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
+// Orders
+app.post('/api/orders/import', fakeAuth, async (req: any, res: any) => {
+  try {
+    await Promise.all(req.body.map((data: any) => prisma.importedRecord.create({ data: { type: 'Order', data } })));
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.put('/api/orders/:id/status', fakeAuth, async (req: any, res: any) => {
+  try {
+    const record = await prisma.importedRecord.findUnique({ where: { id: req.params.id } });
+    if (!record) throw new Error("Not found");
+    const data = record.data as any;
+    data.status = req.body.status;
+    await prisma.importedRecord.update({ where: { id: req.params.id }, data: { data } });
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.post('/api/orders/bulk-status', fakeAuth, async (req: any, res: any) => {
+  try {
+    const records = await prisma.importedRecord.findMany({ where: { id: { in: req.body.ids } } });
+    await Promise.all(records.map(async r => {
+      const data = r.data as any;
+      data.status = req.body.status;
+      return prisma.importedRecord.update({ where: { id: r.id }, data: { data } });
+    }));
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.delete('/api/orders/:id', fakeAuth, async (req: any, res: any) => {
+  try {
+    await prisma.importedRecord.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+app.post('/api/orders/bulk-delete', fakeAuth, async (req: any, res: any) => {
+  try {
+    await prisma.importedRecord.deleteMany({ where: { id: { in: req.body.ids } } });
+    res.json({ success: true });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 
 // Resend

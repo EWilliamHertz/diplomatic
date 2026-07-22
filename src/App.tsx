@@ -12,6 +12,7 @@ import { Information } from './pages/Information';
 import { Leads } from './pages/Leads';
 import { Customers } from './pages/Customers';
 import { Calculator } from './pages/Calculator';
+import { Orders } from './pages/Orders';
 import { 
   LayoutDashboard, 
   Gavel, 
@@ -111,8 +112,7 @@ const PageHeader = ({ title, itemName }: { title: string, itemName: string }) =>
 
 import { Marketing } from './pages/Marketing';
 
-const Settings = () => <div className="panel"><h2>Settings Content</h2></div>;
-const Orders = () => <div className="panel"><PageHeader title="Orders" itemName="Order" /></div>;
+const Settings = () => <div className="panel"><PageHeader title="Settings" itemName="Setting" /></div>;
 
 function AppLayout() {
   const { t, i18n } = useTranslation();

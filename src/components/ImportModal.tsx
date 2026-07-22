@@ -5,7 +5,7 @@ import * as XLSX from 'xlsx';
 interface ImportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  target: 'Leads' | 'Customers';
+  target: 'Leads' | 'Customers' | 'Orders';
   onImport: (data: any[]) => void;
 }
 

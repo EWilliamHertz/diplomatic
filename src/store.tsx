@@ -69,6 +69,7 @@ interface StoreState {
   customers: any[];
   campaigns: Campaign[];
   calculations: Calculation[];
+  orders: any[];
   addProposal: (p: Partial<Proposal>) => Promise<void>;
   updateProposal: (id: string, updates: Partial<Proposal>) => Promise<void>;
   voteOnProposal: (id: string, choice: 'for'|'against'|'abstain') => Promise<void>;
@@ -79,10 +80,15 @@ interface StoreState {
   addTransaction: (t: Partial<Transaction>) => Promise<void>;
   importLeads: (data: any[]) => Promise<void>;
   importCustomers: (data: any[]) => Promise<void>;
+  importOrders: (data: any[]) => Promise<void>;
   updateLeadStatus: (id: string, status: string) => Promise<void>;
   bulkUpdateLeadStatus: (ids: string[], status: string) => Promise<void>;
+  updateOrderStatus: (id: string, status: string) => Promise<void>;
+  bulkUpdateOrderStatus: (ids: string[], status: string) => Promise<void>;
   deleteLead: (id: string) => Promise<void>;
   bulkDeleteLeads: (ids: string[]) => Promise<void>;
+  deleteOrder: (id: string) => Promise<void>;
+  bulkDeleteOrders: (ids: string[]) => Promise<void>;
   deleteCustomer: (id: string) => Promise<void>;
   bulkDeleteCustomers: (ids: string[]) => Promise<void>;
   addCalculation: (c: Partial<Calculation>) => Promise<void>;
@@ -100,6 +106,8 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [calculations, setCalculations] = useState<Calculation[]>([]);
 
+  const [orders, setOrders] = useState<any[]>([]);
+
   const refreshData = async () => {
     try {
       const res = await fetch('/api/sync');
@@ -109,6 +117,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
       setCampaigns(data.campaigns || []);
       setLeads(data.leads || []);
       setCustomers(data.customers || []);
+      setOrders(data.orders || []);
       
       const calcRes = await fetch('/api/calculations');
       if (calcRes.ok) setCalculations(await calcRes.json());
@@ -126,6 +135,27 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
   const addCalculation = async (c: Partial<Calculation>) => {
     await fetch('/api/calculations', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(c) });
+    await refreshData();
+  };
+
+  const importOrders = async (data: any[]) => {
+    await fetch('/api/orders/import', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+    await refreshData();
+  };
+  const updateOrderStatus = async (id: string, status: string) => {
+    await fetch(`/api/orders/${id}/status`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ status }) });
+    await refreshData();
+  };
+  const bulkUpdateOrderStatus = async (ids: string[], status: string) => {
+    await fetch('/api/orders/bulk-status', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ids, status }) });
+    await refreshData();
+  };
+  const deleteOrder = async (id: string) => {
+    await fetch(`/api/orders/${id}`, { method: 'DELETE' });
+    await refreshData();
+  };
+  const bulkDeleteOrders = async (ids: string[]) => {
+    await fetch('/api/orders/bulk-delete', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ids }) });
     await refreshData();
   };
 
@@ -202,8 +232,8 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <StoreContext.Provider value={{ 
-      balance, proposals, transactions, messages, leads, customers, campaigns, calculations,
-      addProposal, updateProposal, voteOnProposal, addArgument, addFollowUp, addMessage, addCampaign, addTransaction, addCalculation, importLeads, importCustomers, updateLeadStatus, bulkUpdateLeadStatus, deleteLead, bulkDeleteLeads, deleteCustomer, bulkDeleteCustomers
+      balance, proposals, transactions, messages, leads, customers, campaigns, calculations, orders,
+      addProposal, updateProposal, voteOnProposal, addArgument, addFollowUp, addMessage, addCampaign, addTransaction, addCalculation, importLeads, importCustomers, importOrders, updateLeadStatus, bulkUpdateLeadStatus, updateOrderStatus, bulkUpdateOrderStatus, deleteLead, bulkDeleteLeads, deleteOrder, bulkDeleteOrders, deleteCustomer, bulkDeleteCustomers
     }}>
       {children}
     </StoreContext.Provider>
