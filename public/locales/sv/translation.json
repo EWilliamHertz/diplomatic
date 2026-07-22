@@ -1,0 +1,87 @@
+{
+  "common": {
+    "loading": "Laddar...",
+    "error": "Ett fel uppstod",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "confirm": "Bekräfta",
+    "delete": "Radera"
+  },
+  "nav": {
+    "dashboard": "Översikt",
+    "decisions": "Beslut",
+    "treasury": "Kassa",
+    "members": "Medlemmar",
+    "settings": "Inställningar",
+    "leads": "Leads",
+    "customers": "Kunder",
+    "orders": "Beställningar",
+    "marketing": "Marknadsföring",
+    "information": "Information"
+  },
+  "dashboard": {
+    "title": "Översikt",
+    "runway": "Runway",
+    "months": "månader",
+    "cashPosition": "Kassaposition",
+    "monthlyBurn": "Månatlig förbränning",
+    "activeMembers": "Aktiva Medlemmar",
+    "recentDecisions": "Senaste Beslut",
+    "recentTransactions": "Senaste Transaktioner"
+  },
+  "proposals": {
+    "title": "Beslut & Förslag",
+    "create": "Skapa Förslag",
+    "status": {
+      "active": "Aktiv",
+      "approved": "Godkänd",
+      "rejected": "Avvisad",
+      "draft": "Utkast"
+    },
+    "voteFor": "För",
+    "voteAgainst": "Emot",
+    "voteAbstain": "Avstå",
+    "quorum": "Kvorum krävs",
+    "endsIn": "Slutar om",
+    "empty": "Inga förslag hittades. Bli den första att skapa ett!",
+    "addPro": "Fördel",
+    "addCon": "Nackdel",
+    "addArg": "Lägg till argument",
+    "viewProsCons": "Visa för- och nackdelar",
+    "hideProsCons": "Dölj för- och nackdelar",
+    "createTitle": "Skapa ett nytt förslag",
+    "titlePlaceholder": "Titel (t.ex. Marknadsföringsbudget Q3)",
+    "descPlaceholder": "Beskrivning och motivering",
+    "amountPlaceholder": "Budgetbelopp (€)"
+  },
+  "membersPage": {
+    "inviteBtn": "Bjud in medlem",
+    "colName": "Namn",
+    "colEmail": "E-post",
+    "colRole": "Roll",
+    "colJoined": "Gick med",
+    "inviteTitle": "Bjud in en medlem",
+    "inviteDesc": "Skicka en inbjudan via e-post för att samarbeta. De får en säker länk för att gå med i din organisation.",
+    "emailLabel": "E-postadress",
+    "emailPlaceholder": "kollega@exempel.se",
+    "sendInvite": "Skicka inbjudan",
+    "sending": "Skickar...",
+    "inviteSent": "Inbjudan skickad!",
+    "inviteSentDesc": "Ett e-postmeddelande har skickats till "
+  },
+  "treasuryPage": {
+    "title": "Kassa",
+    "balance": "Totalt Saldo",
+    "recent": "Senaste Transaktioner",
+    "colDate": "Datum",
+    "colDesc": "Beskrivning",
+    "colAmount": "Belopp",
+    "colStatus": "Status"
+  },
+  "informationPage": {
+    "title": "Klotterplank",
+    "placeholder": "Dela en uppdatering, nyhet eller idé...",
+    "postBtn": "Gör Inlägg",
+    "empty": "Inga meddelanden ännu. Bli den första att skriva på klotterplanket!"
+  }
+}

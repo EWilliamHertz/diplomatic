@@ -1,0 +1,87 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "decisions": "Decisions",
+    "treasury": "Treasury",
+    "members": "Members",
+    "settings": "Settings",
+    "leads": "Leads",
+    "customers": "Customers",
+    "orders": "Orders",
+    "marketing": "Marketing",
+    "information": "Information"
+  },
+  "dashboard": {
+    "title": "Overview",
+    "runway": "Runway",
+    "months": "months",
+    "cashPosition": "Cash Position",
+    "monthlyBurn": "Monthly Burn",
+    "activeMembers": "Active Members",
+    "recentDecisions": "Recent Decisions",
+    "recentTransactions": "Recent Transactions"
+  },
+  "proposals": {
+    "title": "Decisions & Proposals",
+    "create": "Create Proposal",
+    "status": {
+      "active": "Active",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "draft": "Draft"
+    },
+    "voteFor": "For",
+    "voteAgainst": "Against",
+    "voteAbstain": "Abstain",
+    "quorum": "Quorum required",
+    "endsIn": "Ends in",
+    "empty": "No proposals found. Be the first to create one!",
+    "addPro": "Pro",
+    "addCon": "Con",
+    "addArg": "Add Argument",
+    "viewProsCons": "View Pros & Cons",
+    "hideProsCons": "Hide Pros & Cons",
+    "createTitle": "Create a New Proposal",
+    "titlePlaceholder": "Proposal Title (e.g., Q3 Marketing Budget)",
+    "descPlaceholder": "Description & Rationale",
+    "amountPlaceholder": "Budget Amount (€)"
+  },
+  "membersPage": {
+    "inviteBtn": "Invite Member",
+    "colName": "Name",
+    "colEmail": "Email",
+    "colRole": "Role",
+    "colJoined": "Joined",
+    "inviteTitle": "Invite a Member",
+    "inviteDesc": "Send an email invitation to collaborate. They will receive a secure link to join your organization.",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "colleague@example.com",
+    "sendInvite": "Send Invite",
+    "sending": "Sending...",
+    "inviteSent": "Invite Sent!",
+    "inviteSentDesc": "An email has been dispatched to "
+  },
+  "treasuryPage": {
+    "title": "Treasury",
+    "balance": "Total Balance",
+    "recent": "Recent Transactions",
+    "colDate": "Date",
+    "colDesc": "Description",
+    "colAmount": "Amount",
+    "colStatus": "Status"
+  },
+  "informationPage": {
+    "title": "Notice Board",
+    "placeholder": "Share an update, news, or idea...",
+    "postBtn": "Post Message",
+    "empty": "No messages yet. Be the first to post on the notice board!"
+  }
+}

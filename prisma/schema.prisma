@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  passwordHash String
+  name         String?
+  lang         String         @default("en")
+  createdAt    DateTime       @default(now())
+  lastActiveAt DateTime       @default(now())
+  memberships  GroupMember[]
+  groupsCreated Group[]       @relation("CreatedGroups")
+  votes        Vote[]
+  comments     Comment[]
+}
+
+model Group {
+  id          String         @id @default(uuid())
+  name        String
+  description String?
+  inviteCode  String         @unique
+  createdAt   DateTime       @default(now())
+  deletedAt   DateTime?
+  createdBy   String
+  creator     User           @relation("CreatedGroups", fields: [createdBy], references: [id])
+  members     GroupMember[]
+  proposals   Proposal[]
+  transactions Transaction[]
+  invites     GroupInvite[]
+}
+
+model GroupMember {
+  id                  String   @id @default(uuid())
+  groupId             String
+  userId              String
+  role                String   @default("Member") // Super Admin, Admin, Treasurer, Member, Observer
+  contributionMonthly Float?   @default(0)
+  votingPower         Float?   @default(1)
+  joinedAt            DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId])
+}
+
+model GroupInvite {
+  id        String   @id @default(uuid())
+  groupId   String
+  email     String
+  token     String   @unique
+  role      String   @default("Member")
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id])
+}
+
+model Proposal {
+  id              String    @id @default(uuid())
+  groupId         String
+  createdBy       String
+  title           String
+  title_sv        String?
+  description     String?
+  description_sv  String?
+  rationale       String?
+  rationale_sv    String?
+  category        String?
+  status          String    @default("draft") // draft, active, approved, rejected, expired
+  amount          Float?
+  requiredQuorum  Float?
+  endsAt          DateTime?
+  createdAt       DateTime  @default(now())
+  resolvedAt      DateTime?
+
+  group Group @relation(fields: [groupId], references: [id])
+  votes Vote[]
+  comments Comment[]
+}
+
+model Vote {
+  id          String   @id @default(uuid())
+  proposalId  String
+  userId      String
+  choice      String   // for, against, abstain
+  createdAt   DateTime @default(now())
+
+  proposal Proposal @relation(fields: [proposalId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@unique([proposalId, userId])
+}
+
+model Comment {
+  id          String    @id @default(uuid())
+  proposalId  String
+  userId      String
+  body        String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  proposal Proposal @relation(fields: [proposalId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  groupId     String
+  type        String   // contribution, expense, transfer
+  description String?
+  amount      Float
+  date        DateTime
+  createdBy   String
+  receiptUrl  String?
+  category    String?
+
+  group Group @relation(fields: [groupId], references: [id])
+}
+
+model ImportedRecord {
+  id         String   @id @default(uuid())
+  type       String   // Order, Lead, Customer
+  data       Json
+  createdAt  DateTime @default(now())
+}
