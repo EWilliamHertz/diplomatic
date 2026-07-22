@@ -62,6 +62,19 @@ app.get('/api/sync', fakeAuth, async (req: any, res: any) => {
     const customers = await prisma.customer.findMany({ orderBy: { createdAt: 'desc' } });
     const ordersDb = await prisma.importedRecord.findMany({ where: { type: 'Order' }, orderBy: { createdAt: 'desc' } });
     
+    // Get members for group 'g1'
+    const groupMembers = await prisma.groupMember.findMany({
+      where: { groupId: 'g1' },
+      include: { user: true }
+    });
+    const formattedMembers = groupMembers.map(m => ({
+      id: m.id,
+      name: m.user.name || m.user.email,
+      email: m.user.email,
+      role: m.role,
+      joined: m.joinedAt.toISOString().split('T')[0]
+    }));
+
     // Transform proposals to match frontend interface
     const formattedProposals = proposals.map(p => {
       const forVotes = p.votes.filter(v => v.choice === 'for').length;
@@ -84,7 +97,7 @@ app.get('/api/sync', fakeAuth, async (req: any, res: any) => {
         amount: p.amount || 0,
         status: p.status,
         votes: { for: forVotes, against: againstVotes, abstain: abstainVotes },
-        totalMembers: 5,
+        totalMembers: formattedMembers.length,
         userVote: p.votes.find(v => v.userId === req.user.id)?.choice || null,
         arguments: args,
         followUps: followUps
@@ -115,8 +128,37 @@ app.get('/api/sync', fakeAuth, async (req: any, res: any) => {
       leads: formattedLeads,
       customers: formattedCustomers,
       orders: formattedOrders,
+      members: formattedMembers,
       messages: [] // Mock messages
     });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Manually Add Member
+app.post('/api/members/add', fakeAuth, async (req: any, res: any) => {
+  try {
+    const { name, email, password, role } = req.body;
+    const groupId = 'g1';
+
+    let user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      const hash = await bcrypt.hash(password || 'password123', 10);
+      user = await prisma.user.create({
+        data: { email, name, passwordHash: hash }
+      });
+    } else if (name) {
+      user = await prisma.user.update({ where: { id: user.id }, data: { name } });
+    }
+
+    const member = await prisma.groupMember.upsert({
+      where: { groupId_userId: { groupId, userId: user.id } },
+      update: { role: role || 'Member' },
+      create: { groupId, userId: user.id, role: role || 'Member' }
+    });
+
+    res.json({ success: true, member });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

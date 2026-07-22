@@ -70,6 +70,7 @@ interface StoreState {
   campaigns: Campaign[];
   calculations: Calculation[];
   orders: any[];
+  members: any[];
   addProposal: (p: Partial<Proposal>) => Promise<void>;
   updateProposal: (id: string, updates: Partial<Proposal>) => Promise<void>;
   voteOnProposal: (id: string, choice: 'for'|'against'|'abstain') => Promise<void>;
@@ -92,6 +93,7 @@ interface StoreState {
   deleteCustomer: (id: string) => Promise<void>;
   bulkDeleteCustomers: (ids: string[]) => Promise<void>;
   addCalculation: (c: Partial<Calculation>) => Promise<void>;
+  addMemberManually: (data: any) => Promise<void>;
 }
 
 const StoreContext = createContext<StoreState | undefined>(undefined);
@@ -105,8 +107,8 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const [customers, setCustomers] = useState<any[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [calculations, setCalculations] = useState<Calculation[]>([]);
-
   const [orders, setOrders] = useState<any[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
 
   const refreshData = async () => {
     try {
@@ -118,6 +120,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
       setLeads(data.leads || []);
       setCustomers(data.customers || []);
       setOrders(data.orders || []);
+      setMembers(data.members || []);
       
       const calcRes = await fetch('/api/calculations');
       if (calcRes.ok) setCalculations(await calcRes.json());
@@ -230,10 +233,19 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     setMessages([m, ...messages]);
   };
 
+  const addMemberManually = async (data: any) => {
+    await fetch('/api/members/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    await refreshData();
+  };
+
   return (
     <StoreContext.Provider value={{ 
-      balance, proposals, transactions, messages, leads, customers, campaigns, calculations, orders,
-      addProposal, updateProposal, voteOnProposal, addArgument, addFollowUp, addMessage, addCampaign, addTransaction, addCalculation, importLeads, importCustomers, importOrders, updateLeadStatus, bulkUpdateLeadStatus, updateOrderStatus, bulkUpdateOrderStatus, deleteLead, bulkDeleteLeads, deleteOrder, bulkDeleteOrders, deleteCustomer, bulkDeleteCustomers
+      balance, proposals, transactions, messages, leads, customers, campaigns, calculations, orders, members,
+      addProposal, updateProposal, voteOnProposal, addArgument, addFollowUp, addMessage, addCampaign, addTransaction, addCalculation, importLeads, importCustomers, importOrders, updateLeadStatus, bulkUpdateLeadStatus, updateOrderStatus, bulkUpdateOrderStatus, deleteLead, bulkDeleteLeads, deleteOrder, bulkDeleteOrders, deleteCustomer, bulkDeleteCustomers, addMemberManually
     }}>
       {children}
     </StoreContext.Provider>
