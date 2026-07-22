@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useTranslation } from 'react-i18next';
 import { TrendingUp, Users, Wallet, Calendar, AlertCircle } from 'lucide-react';
 import { Skeleton } from '../components/Skeleton';
