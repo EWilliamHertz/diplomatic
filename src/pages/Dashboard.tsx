@@ -4,30 +4,25 @@ import { TrendingUp, Users, Wallet, Calendar, AlertCircle } from 'lucide-react';
 import { Skeleton } from '../components/Skeleton';
 import { useStore } from '../store';
 
+import { useState, useEffect } from 'react';
+
 // Placeholder hook to simulate data loading
 const useDashboardData = () => {
-  const [loading, setLoading] = React.useState(true);
-  const [data, setData] = React.useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
-      setData({
-        runway: '14 mo',
-        cashPosition: '€142,500',
-        monthlyBurn: '€9,800',
-        activeMembers: '12'
-      });
       setLoading(false);
     }, 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  return { loading, data };
+  return { loading };
 };
 
 export const Dashboard = () => {
   const { t } = useTranslation();
-  const { loading, data } = useDashboardData();
+  const { loading } = useDashboardData();
   const { balance } = useStore();
 
   return (
@@ -42,7 +37,7 @@ export const Dashboard = () => {
             <span style={{ fontSize: '14px' }}>{t('dashboard.runway')}</span>
           </div>
           <div style={{ fontSize: '28px', fontWeight: 'bold' }}>
-            {loading ? <Skeleton width="80px" height="32px" /> : (data?.runway ?? '---')}
+            {loading ? <Skeleton width="80px" height="32px" /> : '0 mo'}
           </div>
         </div>
         
@@ -62,7 +57,7 @@ export const Dashboard = () => {
             <span style={{ fontSize: '14px' }}>{t('dashboard.monthlyBurn')}</span>
           </div>
           <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--danger)' }}>
-            {loading ? <Skeleton width="100px" height="32px" /> : (data?.monthlyBurn ?? '---')}
+            {loading ? <Skeleton width="100px" height="32px" /> : '€0'}
           </div>
         </div>
         
@@ -72,7 +67,7 @@ export const Dashboard = () => {
             <span style={{ fontSize: '14px' }}>{t('dashboard.activeMembers')}</span>
           </div>
           <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--lilac)' }}>
-            {loading ? <Skeleton width="60px" height="32px" /> : (data?.activeMembers ?? '---')}
+            {loading ? <Skeleton width="60px" height="32px" /> : '0'}
           </div>
         </div>
       </div>
